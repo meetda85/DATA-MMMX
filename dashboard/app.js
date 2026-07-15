@@ -25,16 +25,38 @@ const loadingState = document.getElementById("loading-state");
 const errorState = document.getElementById("error-state");
 const emptyState = document.getElementById("empty-state");
 
-// Obtener la fecha local de CDMX en formato YYYY-MM-DD
+// Obtener la fecha local de CDMX en formato YYYY-MM-DD de forma segura para cualquier dispositivo/navegador
 function getCdmxDateString() {
-  const d = new Date();
-  const formatter = new Intl.DateTimeFormat('en-CA', {
-    timeZone: 'America/Mexico_City',
-    year: 'numeric',
-    month: '2-digit',
-    day: '2-digit'
-  });
-  return formatter.format(d);
+  try {
+    const d = new Date();
+    const formatter = new Intl.DateTimeFormat('en-US', {
+      timeZone: 'America/Mexico_City',
+      year: 'numeric',
+      month: '2-digit',
+      day: '2-digit'
+    });
+    const parts = formatter.formatToParts(d);
+    let year = '', month = '', day = '';
+    
+    parts.forEach(p => {
+      if (p.type === 'year') year = p.value;
+      if (p.type === 'month') month = p.value;
+      if (p.type === 'day') day = p.value;
+    });
+    
+    if (year && month && day) {
+      return `${year}-${month}-${day}`;
+    }
+  } catch (e) {
+    console.error("Error al formatear fecha CDMX:", e);
+  }
+  
+  // Fallback local seguro en caso de error
+  const now = new Date();
+  const y = now.getFullYear();
+  const m = String(now.getMonth() + 1).padStart(2, '0');
+  const d = String(now.getDate()).padStart(2, '0');
+  return `${y}-${m}-${d}`;
 }
 
 // Inicialización de la Página
