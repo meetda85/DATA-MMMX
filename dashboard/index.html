@@ -7,6 +7,14 @@
   <!-- SEO Meta Tags -->
   <meta name="description" content="Dashboard local e interno para el monitoreo de la estadística horaria de operaciones reales de aterrizaje y despegue en el Aeropuerto Internacional de la Ciudad de México (MMMX).">
   
+  <!-- PWA Manifest & Meta Tags -->
+  <link rel="manifest" href="manifest.json">
+  <meta name="theme-color" content="#0a0c16">
+  <link rel="apple-touch-icon" href="icons/icon-192.png">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="Monitoreo MMMX">
+  
   <!-- Google Fonts: Outfit -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -377,6 +385,16 @@
     <p>Dashboard de Operaciones MMMX Local &copy; 2026. Datos locales y seguros en SQLite.</p>
   </footer>
 
+  <!-- Registro de Service Worker para PWA -->
+  <script>
+    if ('serviceWorker' in navigator) {
+      window.addEventListener('load', () => {
+        navigator.serviceWorker.register('sw.js')
+          .then((reg) => console.log('Service Worker registrado con éxito:', reg.scope))
+          .catch((err) => console.error('Error al registrar Service Worker:', err));
+      });
+    }
+  </script>
   <!-- Lógica JavaScript -->
   <script src="app.js"></script>
 </body>

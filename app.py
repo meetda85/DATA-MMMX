@@ -136,13 +136,26 @@ def run_sync():
         }), 500
 
 if __name__ == "__main__":
-    # Configurar puerto y host por defecto
-    host = os.environ.get("HOST", "127.0.0.1")
+    # Configurar puerto y host por defecto (0.0.0.0 para acceso en red local)
+    host = os.environ.get("HOST", "0.0.0.0")
     port = int(os.environ.get("PORT", 5000))
+    
+    import socket
+    local_ip = "127.0.0.1"
+    try:
+        # Conectar a una IP pública (no realiza tráfico real) para obtener la interfaz activa
+        s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+        s.connect(("8.8.8.8", 80))
+        local_ip = s.getsockname()[0]
+        s.close()
+    except Exception:
+        pass
     
     print("\n" + "="*50)
     print(f" Servidor de Operaciones MMMX Iniciado")
-    print(f" Abre en tu navegador: http://localhost:{port}")
+    print(f" Acceso en esta PC: http://localhost:{port}")
+    if local_ip != "127.0.0.1":
+        print(f" Acceso en tu Tablet/Red Local: http://{local_ip}:{port}")
     print("="*50 + "\n")
     
     app.run(host=host, port=port, debug=True)

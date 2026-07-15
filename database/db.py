@@ -2,8 +2,13 @@ import os
 import sqlite3
 
 # Ruta al archivo de base de datos local
-DB_DIR = os.path.dirname(os.path.abspath(__file__))
-DB_PATH = os.path.join(DB_DIR, "operaciones_mmmx.db")
+# Redirigir a /tmp en entornos de Vercel ya que el sistema de archivos principal es de solo lectura
+if os.environ.get("VERCEL"):
+    DB_DIR = "/tmp"
+    DB_PATH = os.path.join(DB_DIR, "operaciones_mmmx.db")
+else:
+    DB_DIR = os.path.dirname(os.path.abspath(__file__))
+    DB_PATH = os.path.join(DB_DIR, "operaciones_mmmx.db")
 
 # Diccionario de Aerolíneas comunes en el AICM (MMMX) para mapear código ICAO a Nombre Comercial
 AEROLINEAS_MAP = {
