@@ -104,6 +104,8 @@ document.addEventListener("DOMContentLoaded", () => {
     });
     
     renderFlightsLog(filtered);
+  });
+  
   // Obtener estado inicial de la autosincronización
   const autosyncToggle = document.getElementById("autosync-toggle");
   
