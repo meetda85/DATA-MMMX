@@ -82,6 +82,59 @@ document.addEventListener("DOMContentLoaded", () => {
     });
     
     renderFlightsLog(filtered);
+  // Obtener estado inicial de la autosincronización
+  const autosyncToggle = document.getElementById("autosync-toggle");
+  
+  async function cargarEstadoAutosync() {
+    try {
+      const res = await fetch("/api/config/autosync");
+      if (res.ok) {
+        const data = await res.json();
+        autosyncToggle.checked = data.enabled;
+      }
+    } catch (err) {
+      console.error("Error al obtener estado de autosync:", err);
+    }
+  }
+  
+  cargarEstadoAutosync();
+  
+  // Event listener para el cambio de autosincronización
+  autosyncToggle.addEventListener("change", async (e) => {
+    const isChecked = e.target.checked;
+    const actionText = isChecked ? "ACTIVAR" : "DESACTIVAR";
+    const pin = prompt(`Ingrese la contraseña de seguridad para ${actionText} la sincronización automática (PIN):`);
+    
+    if (pin === null) {
+      e.target.checked = !isChecked; // Revertir
+      return;
+    }
+    
+    try {
+      const res = await fetch("/api/config/autosync", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify({
+          pin: pin,
+          enabled: isChecked
+        })
+      });
+      
+      const result = await res.json();
+      
+      if (!res.ok || !result.success) {
+        alert(result.error || "Error al configurar la sincronización automática.");
+        e.target.checked = !isChecked; // Revertir
+      } else {
+        alert(result.message);
+      }
+    } catch (err) {
+      console.error("Error al guardar autosync config:", err);
+      alert("Error de red al guardar la configuración.");
+      e.target.checked = !isChecked; // Revertir
+    }
   });
 });
 
@@ -122,10 +175,13 @@ async function cargarDatos(fecha) {
 
 // Enviar petición para ejecutar sincronización (Worker) desde el servidor local
 async function sincronizarYRecargar() {
+  const pin = prompt("Ingrese la contraseña de seguridad para iniciar sincronización (PIN):");
+  if (pin === null) return; // Cancelado
+  
   mostrarCarga("Sincronizando con FlightAware AeroAPI (Outbound HTTPS)...");
   
   try {
-    const response = await fetch(`/api/sync?date=${selectedDate}`, {
+    const response = await fetch(`/api/sync?date=${selectedDate}&pin=${pin}`, {
       method: "POST"
     });
     

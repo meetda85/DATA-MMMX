@@ -1,7 +1,41 @@
 import os
 import sys
+import threading
+import time
 from datetime import datetime
 from flask import Flask, request, jsonify, send_from_directory
+
+# Variables globales para control de sincronización automática
+AUTO_SYNC_ENABLED = False
+
+def background_sync_loop():
+    global AUTO_SYNC_ENABLED
+    print("[PROGRAMADOR] Iniciando hilo del programador automático (Desactivado por defecto).")
+    while True:
+        # Esperar 1 hora en bloques de 60 segundos
+        for _ in range(60):
+            time.sleep(60)
+            if not AUTO_SYNC_ENABLED:
+                break
+        
+        if AUTO_SYNC_ENABLED:
+            try:
+                print("[PROGRAMADOR] Iniciando sincronización automática programada...")
+                from workers.worker import ejecutar_sincronizacion
+                
+                # Obtener la fecha local de CDMX en formato YYYY-MM-DD
+                try:
+                    from zoneinfo import ZoneInfo
+                    cdmx_tz = ZoneInfo("America/Mexico_City")
+                except ImportError:
+                    from pytz import timezone
+                    cdmx_tz = timezone("America/Mexico_City")
+                    
+                fecha_hoy = datetime.now(cdmx_tz).strftime("%Y-%m-%d")
+                ejecutar_sincronizacion(fecha_hoy)
+                print(f"[PROGRAMADOR] Sincronización automática de {fecha_hoy} completada.")
+            except Exception as e:
+                print(f"[PROGRAMADOR] Error en la sincronización programada: {e}")
 
 # Agregar el directorio raíz del proyecto al PATH para permitir imports relativos
 raiz_proyecto = os.path.dirname(os.path.abspath(__file__))
@@ -115,6 +149,14 @@ def run_sync():
     Endpoint para ejecutar el worker de recolección en tiempo real.
     Permite refrescar los datos desde el dashboard web con un clic.
     """
+    pin = request.args.get("pin") or request.form.get("pin")
+    if request.is_json:
+        data = request.get_json() or {}
+        pin = pin or data.get("pin")
+        
+    if pin != "0348":
+        return jsonify({"success": False, "error": "Contraseña de seguridad incorrecta."}), 401
+        
     date_str = request.args.get("date")
     if date_str:
         try:
@@ -134,6 +176,43 @@ def run_sync():
             "success": False, 
             "error": f"Fallo al ejecutar la sincronización: {str(e)}"
         }), 500
+
+@app.route("/api/config/autosync", methods=["GET"])
+def get_autosync_status():
+    global AUTO_SYNC_ENABLED
+    return jsonify({
+        "success": True,
+        "enabled": AUTO_SYNC_ENABLED
+    })
+
+@app.route("/api/config/autosync", methods=["POST"])
+def config_autosync():
+    global AUTO_SYNC_ENABLED
+    pin = request.args.get("pin") or request.form.get("pin")
+    enabled = request.args.get("enabled") or request.form.get("enabled")
+    
+    if request.is_json:
+        data = request.get_json() or {}
+        pin = pin or data.get("pin")
+        enabled = enabled if enabled is not None else data.get("enabled")
+        
+    if pin != "0348":
+        return jsonify({"success": False, "error": "Contraseña de seguridad incorrecta."}), 401
+        
+    if enabled is None:
+        return jsonify({"success": False, "error": "El parámetro 'enabled' es requerido."}), 400
+        
+    if isinstance(enabled, str):
+        AUTO_SYNC_ENABLED = enabled.lower() in ("true", "1", "yes")
+    else:
+        AUTO_SYNC_ENABLED = bool(enabled)
+        
+    print(f"[CONFIG] Sincronización automática {'activada' if AUTO_SYNC_ENABLED else 'desactivada'} por el usuario.")
+    return jsonify({
+        "success": True, 
+        "enabled": AUTO_SYNC_ENABLED,
+        "message": f"Sincronización automática {'activada' if AUTO_SYNC_ENABLED else 'desactivada'} con éxito."
+    })
 
 if __name__ == "__main__":
     # Configurar puerto y host por defecto (0.0.0.0 para acceso en red local)
@@ -157,5 +236,8 @@ if __name__ == "__main__":
     if local_ip != "127.0.0.1":
         print(f" Acceso en tu Tablet/Red Local: http://{local_ip}:{port}")
     print("="*50 + "\n")
+    
+    # Iniciar hilo de sincronización automática en segundo plano
+    threading.Thread(target=background_sync_loop, daemon=True).start()
     
     app.run(host=host, port=port, debug=True)
