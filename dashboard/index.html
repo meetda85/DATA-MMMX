@@ -1,0 +1,383 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Dashboard de Operaciones MMMX - Local-First SQLite</title>
+  <!-- SEO Meta Tags -->
+  <meta name="description" content="Dashboard local e interno para el monitoreo de la estadística horaria de operaciones reales de aterrizaje y despegue en el Aeropuerto Internacional de la Ciudad de México (MMMX).">
+  
+  <!-- Google Fonts: Outfit -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  
+  <!-- CSS Personalizado -->
+  <link rel="stylesheet" href="style.css">
+  
+  <!-- Chart.js CDN -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body>
+  <div class="container">
+    <!-- Encabezado de la página -->
+    <header>
+      <div class="brand-section">
+        <h1>
+          <!-- SVG Icono Aeropuerto -->
+          <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" class="feather feather-wind" style="color: var(--accent-cyan);">
+            <path d="M9.59 4.59A2 2 0 1 1 11 8H2m10.59 11.41A2 2 0 1 0 14 16H2m15.73-8.27A2.5 2.5 0 1 1 19.5 12H2"/>
+          </svg>
+          MMMX Operaciones (Local)
+        </h1>
+        <p>Estadística Horaria y Monitoreo de Capacidad (Límite: 44 ops/h)</p>
+      </div>
+      
+      <div class="controls">
+        <div class="date-selector-wrapper">
+          <div>
+            <label for="date-selector">Seleccionar Fecha</label>
+            <input type="date" id="date-selector">
+          </div>
+        </div>
+        
+        <button id="btn-refresh" class="btn-refresh" title="Sincronizar y Actualizar">
+          <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M4 4v5h.582m15.356 2A8.001 8.001 0 1121.21 7.89M9 11l3-3m0 0l3 3m-3-3v12" />
+          </svg>
+        </button>
+      </div>
+    </header>
+
+    <!-- Banner de alerta de capacidad excedida -->
+    <div id="warning-banner-container"></div>
+
+    <!-- Contenedor del Estado de Carga -->
+    <div id="loading-state" class="loading-state" style="display: none;">
+      <div class="spinner"></div>
+      <p>Cargando información del aeropuerto MMMX...</p>
+    </div>
+
+    <!-- Contenedor del Estado de Error -->
+    <div id="error-state" class="error-state" style="display: none;">
+      <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+      </svg>
+      <h3>Error de Carga</h3>
+      <p>Ocurrió un error al obtener la información local.</p>
+    </div>
+
+    <!-- Contenedor de Estado Vacío (Sin datos) -->
+    <div id="empty-state" class="empty-state" style="display: none;">
+      <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M20 13V6a2 2 0 00-2-2H6a2 2 0 00-2 2v7m16 0v5a2 2 0 01-2 2H6a2 2 0 01-2-2v-5m16 0h-2.586a1 1 0 00-.707.293l-2.414 2.414a1 1 0 01-.707.293h-3.172a1 1 0 01-.707-.293l-2.414-2.414A1 1 0 006.586 13H4" />
+      </svg>
+      <h3>Sin Datos Locales</h3>
+      <p>No se encontraron operaciones registradas para esta fecha.</p>
+      <button class="btn-action" id="btn-sync-empty">Sincronizar ahora con FlightAware</button>
+    </div>
+
+    <!-- Contenido Principal del Dashboard -->
+    <section id="dashboard-content">
+      <!-- Fila de Tarjetas de Métricas (KPIs) -->
+      <div class="kpi-grid">
+        <!-- KPI 1: Total Operaciones -->
+        <div class="kpi-card" style="--card-accent: var(--accent-cyan);">
+          <div class="kpi-icon">
+            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11a7 7 0 01-7 7m0 0a7 7 0 01-7-7m7 7v4m0 0H8m4 0h4m-4-8a3 3 0 100-6 3 3 0 000 6z" />
+            </svg>
+          </div>
+          <div class="kpi-info">
+            <span class="kpi-title">Total Operaciones</span>
+            <span id="kpi-total" class="kpi-value">0</span>
+            <span class="kpi-subtitle">Llegadas + Salidas</span>
+          </div>
+        </div>
+
+        <!-- KPI 2: Hora Pico -->
+        <div class="kpi-card" style="--card-accent: var(--accent-purple);">
+          <div class="kpi-icon">
+            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6" />
+            </svg>
+          </div>
+          <div class="kpi-info">
+            <span class="kpi-title">Hora Pico</span>
+            <span id="kpi-peak" class="kpi-value">--</span>
+            <span class="kpi-subtitle">Bloque con más tráfico</span>
+          </div>
+        </div>
+
+        <!-- KPI 3: Promedio de Operaciones -->
+        <div class="kpi-card" style="--card-accent: var(--accent-yellow);">
+          <div class="kpi-icon">
+            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+            </svg>
+          </div>
+          <div class="kpi-info">
+            <span class="kpi-title">Promedio Horario</span>
+            <span id="kpi-average" class="kpi-value">0</span>
+            <span class="kpi-subtitle">Por bloque de 60 min</span>
+          </div>
+        </div>
+
+        <!-- KPI 4: Horas de Saturación -->
+        <div class="kpi-card" style="--card-accent: var(--accent-emerald);">
+          <div class="kpi-icon">
+            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+            </svg>
+          </div>
+          <div class="kpi-info">
+            <span class="kpi-title">Exceso de Capacidad</span>
+            <span id="kpi-saturated" class="kpi-value">0 hrs</span>
+            <span class="kpi-subtitle">Bloques superando 44 ops</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Panel de Hallazgos y Análisis de Hora Pico -->
+      <div class="dashboard-grid" style="margin-top: 0rem; margin-bottom: 2.5rem; grid-template-columns: 2fr 1fr;">
+        <!-- Insights del Día -->
+        <div class="panel" style="justify-content: flex-start; min-height: 250px;">
+          <div class="panel-header" style="margin-bottom: 1rem; border-bottom: 1px solid rgba(255,255,255,0.05); padding-bottom: 0.75rem;">
+            <div>
+              <h2 class="panel-title" style="color: var(--accent-cyan);">
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" style="width: 22px; height: 22px; color: var(--accent-cyan);">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z" />
+                </svg>
+                Hallazgos Operacionales del Día
+              </h2>
+              <span class="panel-subtitle">Análisis estadístico generado por SQLite local</span>
+            </div>
+          </div>
+          <ul id="insights-list" style="list-style: none; display: flex; flex-direction: column; gap: 0.85rem; font-size: 0.95rem; color: var(--text-secondary); padding: 0.5rem 0;">
+            <!-- Se poblará dinámicamente -->
+          </ul>
+        </div>
+
+        <!-- Desglose de Hora Pico -->
+        <div class="panel" style="justify-content: flex-start; min-height: 250px;">
+          <div class="panel-header" style="margin-bottom: 1rem; border-bottom: 1px solid rgba(255,255,255,0.05); padding-bottom: 0.75rem;">
+            <div>
+              <h2 class="panel-title" style="color: var(--accent-yellow);">
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" style="width: 22px; height: 22px; color: var(--accent-yellow);">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z" />
+                </svg>
+                Congestión Hora Pico
+              </h2>
+              <span class="panel-subtitle">Orígenes/Destinos críticos</span>
+            </div>
+          </div>
+          <div id="peak-hour-details" style="display: flex; flex-direction: column; gap: 0.85rem; padding: 0.25rem 0;">
+            <!-- Se poblará dinámicamente -->
+          </div>
+        </div>
+      </div>
+
+      <!-- Cuadrícula Principal: Gráfico y Tabla -->
+      <div class="dashboard-grid">
+        <!-- Panel Izquierdo: Gráfico Temporal -->
+        <div class="panel">
+          <div class="panel-header">
+            <div>
+              <h2 class="panel-title">
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 12l3-3 3 3 4-4M8 21h8a2 2 0 002-2V5a2 2 0 00-2-2H8a2 2 0 00-2 2v14a2 2 0 002 2z" />
+                </svg>
+                Curva de Operaciones por Hora
+              </h2>
+              <span class="panel-subtitle">Total de aterrizajes y despegues reales</span>
+            </div>
+            <div>
+              <span id="source-indicator-label" style="font-size: 0.75rem; color: var(--text-muted);">
+                Base de Datos: <span id="source-indicator" class="badge badge-source">SQLite (Local)</span>
+              </span>
+            </div>
+          </div>
+          <div class="chart-container">
+            <canvas id="operationsChart"></canvas>
+          </div>
+        </div>
+
+        <!-- Panel Derecho: Tabla de Desglose -->
+        <div class="panel">
+          <div class="panel-header">
+            <div>
+              <h2 class="panel-title">
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 10h18M3 14h18m-9-4v8m-7 0h14a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z" />
+                </svg>
+                Resumen Horario
+              </h2>
+              <span class="panel-subtitle">Desglose de movimientos del día</span>
+            </div>
+          </div>
+          
+          <div class="table-container">
+            <table>
+              <thead>
+                <tr>
+                  <th>Bloque</th>
+                  <th>ARR (Llegadas)</th>
+                  <th>DEP (Salidas)</th>
+                  <th>Total</th>
+                  <th>Estado</th>
+                </tr>
+              </thead>
+              <tbody id="table-body">
+                <!-- Se poblará dinámicamente con JavaScript -->
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+      <!-- Cuadrícula Secundaria: Estadísticas por Aerolínea -->
+      <div class="dashboard-grid" style="margin-top: 2rem;">
+        <!-- Panel Izquierdo: Tabla de Aerolíneas -->
+        <div class="panel">
+          <div class="panel-header">
+            <div>
+              <h2 class="panel-title">
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
+                </svg>
+                Participación por Aerolínea
+              </h2>
+              <span class="panel-subtitle">Movimientos agrupados por operador aéreo</span>
+            </div>
+          </div>
+          
+          <div class="table-container">
+            <table>
+              <thead>
+                <tr>
+                  <th>Aerolínea</th>
+                  <th>ICAO</th>
+                  <th>ARR (Llegadas)</th>
+                  <th>DEP (Salidas)</th>
+                  <th>Total</th>
+                  <th>% Part.</th>
+                </tr>
+              </thead>
+              <tbody id="airline-table-body">
+                <!-- Se poblará dinámicamente con JavaScript -->
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        <!-- Panel Derecho: Gráfico de dona de Aerolíneas -->
+        <div class="panel">
+          <div class="panel-header">
+            <div>
+              <h2 class="panel-title">
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 3.055A9.001 9.001 0 1020.945 13H11V3.055z" />
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20.488 9H15V3.512A9.025 9.025 0 0120.488 9z" />
+                </svg>
+                Distribución de Operaciones
+              </h2>
+              <span class="panel-subtitle">Distribución porcentual por operador</span>
+            </div>
+          </div>
+          <div class="chart-container" style="height: 350px;">
+            <canvas id="airlineChart"></canvas>
+          </div>
+        </div>
+      </div>
+
+      <!-- Cuadrícula Terciaria: Rutas y Flota -->
+      <div class="dashboard-grid" style="margin-top: 2.5rem;">
+        <!-- Panel de Rutas Top -->
+        <div class="panel">
+          <div class="panel-header">
+            <div>
+              <h2 class="panel-title" style="color: var(--accent-cyan);">
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" style="width: 20px; height: 20px; color: var(--accent-cyan);">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 20l-5.447-2.724A1 1 0 013 16.382V5.618a1 1 0 011.447-.894L9 7m0 13l6-3m-6 3V7m6 10l4.553 2.276A1 1 0 0021 18.382V7.618a1 1 0 00-.553-.894L15 4m0 13V4m0 0L9 7" />
+                </svg>
+                Corredores Críticos (Rutas)
+              </h2>
+              <span class="panel-subtitle">Top 5 rutas más transitadas de la jornada</span>
+            </div>
+          </div>
+          <div class="chart-container" style="height: 350px;">
+            <canvas id="routesChart"></canvas>
+          </div>
+        </div>
+        
+        <!-- Panel de Aeronaves Top -->
+        <div class="panel">
+          <div class="panel-header">
+            <div>
+              <h2 class="panel-title" style="color: var(--accent-purple);">
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" style="width: 20px; height: 20px; color: var(--accent-purple);">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8" />
+                </svg>
+                Mix de Flota (Aeronaves)
+              </h2>
+              <span class="panel-subtitle">Distribución por modelos de avión</span>
+            </div>
+          </div>
+          <div class="chart-container" style="height: 350px;">
+            <canvas id="fleetChart"></canvas>
+          </div>
+        </div>
+      </div>
+
+      <!-- Bitácora Detallada de Vuelos -->
+      <div class="panel" style="margin-top: 2rem;">
+        <div class="panel-header" style="flex-wrap: wrap; gap: 1rem;">
+          <div>
+            <h2 class="panel-title">
+              <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" style="width: 20px; height: 20px; color: var(--accent-cyan);">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01" />
+              </svg>
+              Bitácora Detallada de Vuelos
+            </h2>
+            <span class="panel-subtitle">Lista cronológica de todos los movimientos del día</span>
+          </div>
+          
+          <!-- Buscador Interactivo -->
+          <div class="date-selector-wrapper" style="min-width: 320px; padding: 0.4rem 0.8rem; display: flex; align-items: center; gap: 0.5rem;">
+            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" style="width: 18px; height: 18px; color: var(--text-muted); flex-shrink: 0;">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+            </svg>
+            <input type="text" id="flight-search" placeholder="Filtrar por vuelo, origen, destino, avión..." style="background: transparent; border: none; color: var(--text-primary); font-family: var(--font-family); font-size: 0.9rem; outline: none; width: 100%;">
+          </div>
+        </div>
+
+        <div class="table-container" style="max-height: 450px; overflow-y: auto;">
+          <table>
+            <thead>
+              <tr>
+                <th>Hora Local</th>
+                <th>Vuelo</th>
+                <th>Operación</th>
+                <th>Aerolínea</th>
+                <th>Origen</th>
+                <th>Destino</th>
+                <th>Aeronave</th>
+              </tr>
+            </thead>
+            <tbody id="flights-log-table-body">
+              <!-- Se poblará dinámicamente con JavaScript -->
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+  </div>
+
+  <footer style="margin-top: 4rem; text-align: center; color: var(--text-muted); font-size: 0.875rem;">
+    <p>Dashboard de Operaciones MMMX Local &copy; 2026. Datos locales y seguros en SQLite.</p>
+  </footer>
+
+  <!-- Lógica JavaScript -->
+  <script src="app.js"></script>
+</body>
+</html>

@@ -1,0 +1,70 @@
+================================================================================
+REPORTE CONSOLIDADO DE OPERACIONES DIARIAS - AEROPUERTO MMMX
+Fecha Reportada: 2026-07-13
+Generado el:     2026-07-13 13:01:04 (Hora Local)
+================================================================================
+
+--- RESUMEN GENERAL ---
+  * Total de Operaciones: 300
+  * Total de Aterrizajes (ARR): 150
+  * Total de Despegues (DEP):   150
+  * Promedio de Operaciones/Hora: 12.5
+  * Hora Pico de Operaciones:     09:00 (53 operaciones)
+  * Capacidad Declarada AICM:     44 operaciones / hora
+  * [ALERTA] Horas Excedidas (>44 ops): 3 bloque(s) de hora
+    - Bloque: 07:00 (52 ops) ⚠️
+    - Bloque: 09:00 (53 ops) ⚠️
+    - Bloque: 11:00 (51 ops) ⚠️
+
+--- PARTICIPACIÓN POR AEROLÍNEA ---
+ Aerolínea                           | ICAO  | ARR   | DEP   | Total  | % Part.
+ ---------------------------------------------------------------------------
+ Aeroméxico                          | AMX   | 61    | 70    | 131    | 43.7%
+ Volaris                             | VOI   | 26    | 21    | 47     | 15.7%
+ Aeroméxico Connect                  | SLI   | 23    | 18    | 41     | 13.7%
+ VivaAerobus                         | VIV   | 15    | 14    | 29     | 9.7%
+ United Airlines                     | UAL   | 5     | 7     | 12     | 4.0%
+ American Airlines                   | AAL   | 6     | 4     | 10     | 3.3%
+ Otros / Aviación General            | Otros | 3     | 6     | 9      | 3.0%
+ Delta Air Lines                     | DAL   | 4     | 3     | 7      | 2.3%
+ Línea Aérea (VOC)                   | VOC   | 1     | 1     | 2      | 0.7%
+ Línea Aérea (THY)                   | THY   | 1     | 1     | 2      | 0.7%
+ Línea Aérea (ROU)                   | ROU   | 1     | 1     | 2      | 0.7%
+ Copa Airlines                       | CMP   | 1     | 1     | 2      | 0.7%
+ Línea Aérea (ANX)                   | ANX   | 1     | 1     | 2      | 0.7%
+ TACA Airlines                       | TAI   | 1     | 0     | 1      | 0.3%
+ Iberia                              | IBE   | 0     | 1     | 1      | 0.3%
+ Avianca                             | AVA   | 1     | 0     | 1      | 0.3%
+ Línea Aérea (ACA)                   | ACA   | 0     | 1     | 1      | 0.3%
+
+--- DISTRIBUCIÓN HORARIA ---
+ Bloque   | ARR (Llegadas) | DEP (Salidas) | Total Ops | Estado      
+ --------------------------------------------------------------
+ 00:00    | 0              | 0             | 0         | Fluido      
+ 01:00    | 0              | 0             | 0         | Fluido      
+ 02:00    | 0              | 0             | 0         | Fluido      
+ 03:00    | 0              | 0             | 0         | Fluido      
+ 04:00    | 7              | 0             | 7         | Fluido      
+ 05:00    | 7              | 0             | 7         | Fluido      
+ 06:00    | 9              | 1             | 10        | Fluido      
+ 07:00    | 22             | 30            | 52        | SATURADO ⚠️ 
+ 08:00    | 14             | 23            | 37        | Alta Densidad
+ 09:00    | 21             | 32            | 53        | SATURADO ⚠️ 
+ 10:00    | 22             | 21            | 43        | Alta Densidad
+ 11:00    | 25             | 26            | 51        | SATURADO ⚠️ 
+ 12:00    | 23             | 17            | 40        | Alta Densidad
+ 13:00    | 0              | 0             | 0         | Fluido      
+ 14:00    | 0              | 0             | 0         | Fluido      
+ 15:00    | 0              | 0             | 0         | Fluido      
+ 16:00    | 0              | 0             | 0         | Fluido      
+ 17:00    | 0              | 0             | 0         | Fluido      
+ 18:00    | 0              | 0             | 0         | Fluido      
+ 19:00    | 0              | 0             | 0         | Fluido      
+ 20:00    | 0              | 0             | 0         | Fluido      
+ 21:00    | 0              | 0             | 0         | Fluido      
+ 22:00    | 0              | 0             | 0         | Fluido      
+ 23:00    | 0              | 0             | 0         | Fluido      
+
+================================================================================
+Fin del reporte. Guardado de forma local y privada.
+================================================================================

@@ -1,0 +1,17 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    
+    // Colección de operaciones individuales
+    match /registro_operaciones_mmmx/{document} {
+      allow read: if true;
+      allow write: if false; // Escritura denegada para clientes (solo Admin SDK/Workers pueden escribir)
+    }
+    
+    // Colección de estadísticas pre-agregadas
+    match /estadistica_diaria_mmmx/{document} {
+      allow read: if true;
+      allow write: if false; // Escritura denegada para clientes (solo Admin SDK/Workers pueden escribir)
+    }
+  }
+}

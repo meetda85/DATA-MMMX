@@ -1,0 +1,78 @@
+================================================================================
+REPORTE CONSOLIDADO DE OPERACIONES DIARIAS - AEROPUERTO MMMX
+Fecha Reportada: 2026-07-11
+Generado el:     2026-07-13 13:02:58 (Hora Local)
+================================================================================
+
+--- RESUMEN GENERAL ---
+  * Total de Operaciones: 300
+  * Total de Aterrizajes (ARR): 150
+  * Total de Despegues (DEP):   150
+  * Promedio de Operaciones/Hora: 12.5
+  * Hora Pico de Operaciones:     20:00 (45 operaciones)
+  * Capacidad Declarada AICM:     44 operaciones / hora
+  * [ALERTA] Horas Excedidas (>44 ops): 1 bloque(s) de hora
+    - Bloque: 20:00 (45 ops) ⚠️
+
+--- PARTICIPACIÓN POR AEROLÍNEA ---
+ Aerolínea                           | ICAO  | ARR   | DEP   | Total  | % Part.
+ ---------------------------------------------------------------------------
+ Aeroméxico                          | AMX   | 62    | 66    | 128    | 42.7%
+ Volaris                             | VOI   | 25    | 21    | 46     | 15.3%
+ VivaAerobus                         | VIV   | 19    | 21    | 40     | 13.3%
+ Aeroméxico Connect                  | SLI   | 15    | 15    | 30     | 10.0%
+ American Airlines                   | AAL   | 4     | 4     | 8      | 2.7%
+ Delta Air Lines                     | DAL   | 2     | 4     | 6      | 2.0%
+ United Airlines                     | UAL   | 3     | 2     | 5      | 1.7%
+ Copa Airlines                       | CMP   | 4     | 1     | 5      | 1.7%
+ Lufthansa                           | DLH   | 2     | 2     | 4      | 1.3%
+ Air France                          | AFR   | 2     | 2     | 4      | 1.3%
+ Iberia                              | IBE   | 2     | 1     | 3      | 1.0%
+ Avianca                             | AVA   | 2     | 1     | 3      | 1.0%
+ Línea Aérea (VOC)                   | VOC   | 1     | 1     | 2      | 0.7%
+ KLM Royal Dutch Airlines            | KLM   | 1     | 1     | 2      | 0.7%
+ British Airways                     | BAW   | 1     | 1     | 2      | 0.7%
+ Línea Aérea (UAE)                   | UAE   | 0     | 1     | 1      | 0.3%
+ LATAM Airlines (Brasil)             | TAM   | 0     | 1     | 1      | 0.3%
+ TACA Airlines                       | TAI   | 0     | 1     | 1      | 0.3%
+ Línea Aérea (ROU)                   | ROU   | 1     | 0     | 1      | 0.3%
+ Otros / Aviación General            | Otros | 0     | 1     | 1      | 0.3%
+ LATAM Airlines (Perú)               | LPE   | 0     | 1     | 1      | 0.3%
+ LATAM Airlines (Chile)              | LAN   | 0     | 1     | 1      | 0.3%
+ Línea Aérea (GN)                    | GN    | 1     | 0     | 1      | 0.3%
+ Línea Aérea (FLE)                   | FLE   | 1     | 0     | 1      | 0.3%
+ FedEx Express (Carga)               | FDX   | 1     | 0     | 1      | 0.3%
+ Línea Aérea (FAM)                   | FAM   | 0     | 1     | 1      | 0.3%
+ Línea Aérea (CSN)                   | CSN   | 1     | 0     | 1      | 0.3%
+
+--- DISTRIBUCIÓN HORARIA ---
+ Bloque   | ARR (Llegadas) | DEP (Salidas) | Total Ops | Estado      
+ --------------------------------------------------------------
+ 00:00    | 0              | 0             | 0         | Fluido      
+ 01:00    | 0              | 0             | 0         | Fluido      
+ 02:00    | 0              | 0             | 0         | Fluido      
+ 03:00    | 0              | 0             | 0         | Fluido      
+ 04:00    | 0              | 0             | 0         | Fluido      
+ 05:00    | 0              | 0             | 0         | Fluido      
+ 06:00    | 0              | 0             | 0         | Fluido      
+ 07:00    | 0              | 0             | 0         | Fluido      
+ 08:00    | 0              | 0             | 0         | Fluido      
+ 09:00    | 0              | 0             | 0         | Fluido      
+ 10:00    | 0              | 0             | 0         | Fluido      
+ 11:00    | 0              | 0             | 0         | Fluido      
+ 12:00    | 0              | 0             | 0         | Fluido      
+ 13:00    | 0              | 0             | 0         | Fluido      
+ 14:00    | 0              | 8             | 8         | Fluido      
+ 15:00    | 0              | 22            | 22        | Fluido      
+ 16:00    | 12             | 16            | 28        | Fluido      
+ 17:00    | 14             | 19            | 33        | Fluido      
+ 18:00    | 24             | 15            | 39        | Alta Densidad
+ 19:00    | 28             | 16            | 44        | Alta Densidad
+ 20:00    | 23             | 22            | 45        | SATURADO ⚠️ 
+ 21:00    | 20             | 13            | 33        | Fluido      
+ 22:00    | 14             | 13            | 27        | Fluido      
+ 23:00    | 15             | 6             | 21        | Fluido      
+
+================================================================================
+Fin del reporte. Guardado de forma local y privada.
+================================================================================
