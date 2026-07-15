@@ -136,6 +136,21 @@ document.addEventListener("DOMContentLoaded", () => {
       e.target.checked = !isChecked; // Revertir
     }
   });
+
+  // Cargar versión de la app
+  async function cargarVersion() {
+    try {
+      const res = await fetch("/version.json");
+      if (res.ok) {
+        const data = await res.json();
+        document.getElementById("app-version").textContent = `v${data.version}`;
+      }
+    } catch (e) {
+      console.error("Error al cargar versión:", e);
+    }
+  }
+  
+  cargarVersion();
 });
 
 // Cargar Datos desde la API local del servidor Flask
