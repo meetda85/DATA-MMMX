@@ -23,10 +23,29 @@ jobs:
         run: |
           VERSION=$(jq -r '.version' dashboard/version.json)
           echo "Current Version: $VERSION"
-          MAJOR=$(echo $VERSION | cut -d. -f1)
-          MINOR=$(echo $VERSION | cut -d. -f2)
-          NEW_MINOR=$((MINOR + 1))
-          NEW_VERSION="$MAJOR.$NEW_MINOR"
+          
+          # Separar por puntos
+          IFS='.' read -ra ADDR <<< "$VERSION"
+          LEN=${#ADDR[@]}
+          
+          if [ $LEN -eq 3 ]; then
+            # X.Y.Z -> X.Y.(Z+1)
+            MAJOR=${ADDR[0]}
+            MINOR=${ADDR[1]}
+            PATCH=${ADDR[2]}
+            NEW_PATCH=$((PATCH + 1))
+            NEW_VERSION="$MAJOR.$MINOR.$NEW_PATCH"
+          elif [ $LEN -eq 2 ]; then
+            # X.Y -> X.(Y+1)
+            MAJOR=${ADDR[0]}
+            MINOR=${ADDR[1]}
+            NEW_MINOR=$((MINOR + 1))
+            NEW_VERSION="$MAJOR.$NEW_MINOR"
+          else
+            # Fallback simple
+            NEW_VERSION="$VERSION.1"
+          fi
+          
           echo "New Version: $NEW_VERSION"
           
           # Actualizar version.json

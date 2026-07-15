@@ -1,12 +1,13 @@
-const CACHE_NAME = 'mmmx-monitor-v1';
+const CACHE_NAME = 'mmmx-monitor-v2';
 const ASSETS = [
   '/',
   '/index.html',
-  '/style.css',
-  '/app.js',
+  '/style.css?v=2',
+  '/app.js?v=2',
   '/manifest.json',
   '/icons/icon-192.png',
-  '/icons/icon-512.png'
+  '/icons/icon-512.png',
+  '/version.json'
 ];
 
 self.addEventListener('install', (e) => {
@@ -37,12 +38,22 @@ self.addEventListener('fetch', (e) => {
     return;
   }
   
+  // Estrategia: Network-First (Red primero, luego Caché como respaldo offline)
   e.respondWith(
-    caches.match(e.request).then((cachedResponse) => {
-      if (cachedResponse) {
-        return cachedResponse;
-      }
-      return fetch(e.request);
-    })
+    fetch(e.request)
+      .then((response) => {
+        // Guardar en caché si la respuesta es válida y del mismo origen
+        if (response && response.status === 200 && response.type === 'basic') {
+          const responseToCache = response.clone();
+          caches.open(CACHE_NAME).then((cache) => {
+            cache.put(e.request, responseToCache);
+          });
+        }
+        return response;
+      })
+      .catch(() => {
+        // Si no hay red, servir desde la caché
+        return caches.match(e.request);
+      })
   );
 });
