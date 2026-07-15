@@ -15,6 +15,7 @@ database/*.db
 # Temporary / Scratch
 scratch/
 .env
+firebase-service-account.json
 
 # IDEs
 .vscode/

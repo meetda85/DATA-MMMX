@@ -10,6 +10,11 @@ else:
     DB_DIR = os.path.dirname(os.path.abspath(__file__))
     DB_PATH = os.path.join(DB_DIR, "operaciones_mmmx.db")
 
+try:
+    from database.db_firestore import USE_FIRESTORE, guardar_operacion_firestore, obtener_datos_dia_firestore
+except ImportError:
+    USE_FIRESTORE = False
+
 # Diccionario de Aerolíneas comunes en el AICM (MMMX) para mapear código ICAO a Nombre Comercial
 AEROLINEAS_MAP = {
     "AMX": "Aeroméxico",
@@ -113,6 +118,10 @@ def inicializar_db():
 
 def guardar_operacion(op):
     """Inserta una operación de vuelo. Si ya existe, la ignora."""
+    nuevo_firestore = False
+    if USE_FIRESTORE:
+        nuevo_firestore = guardar_operacion_firestore(op)
+        
     conn = obtener_conexion()
     cursor = conn.cursor()
     try:
@@ -133,10 +142,11 @@ def guardar_operacion(op):
             aerolinea_code, origen_code, destino_code, tipo_aeronave
         ))
         conn.commit()
-        return cursor.rowcount > 0
+        nuevo_sqlite = cursor.rowcount > 0
+        return nuevo_firestore if USE_FIRESTORE else nuevo_sqlite
     except Exception as e:
         print(f"Error al insertar en SQLite: {e}")
-        return False
+        return nuevo_firestore if USE_FIRESTORE else False
     finally:
         conn.close()
 
@@ -145,6 +155,9 @@ def obtener_estadistica_horaria(fecha_str):
     Agrupa y calcula las operaciones por hora para una fecha dada.
     Retorna siempre 24 registros (de 00:00 a 23:00) rellenos con 0 si no hay vuelos.
     """
+    if USE_FIRESTORE:
+        return obtener_datos_dia_firestore(fecha_str)["horas"]
+        
     estadisticas = {f"{h:02d}:00": {"arr": 0, "dep": 0, "total": 0} for h in range(24)}
     
     conn = obtener_conexion()
@@ -193,6 +206,9 @@ def obtener_estadistica_aerolineas(fecha_str):
     Agrupa y cuenta las operaciones por aerolínea para una fecha dada.
     Retorna desgloses de llegadas, salidas y totales.
     """
+    if USE_FIRESTORE:
+        return obtener_datos_dia_firestore(fecha_str)["aerolineas"]
+        
     conn = obtener_conexion()
     cursor = conn.cursor()
     
@@ -232,6 +248,9 @@ def obtener_vuelos_dia(fecha_str):
     Retorna la lista detallada y ordenada cronológicamente de todas las
     operaciones que ocurrieron en un día específico.
     """
+    if USE_FIRESTORE:
+        return obtener_datos_dia_firestore(fecha_str)["vuelos"]
+        
     conn = obtener_conexion()
     cursor = conn.cursor()
     
@@ -271,6 +290,9 @@ def obtener_vuelos_dia(fecha_str):
 
 def obtener_rutas_top(fecha_str):
     """Retorna las 5 rutas con mayor volumen de operaciones para una fecha."""
+    if USE_FIRESTORE:
+        return obtener_datos_dia_firestore(fecha_str)["rutas"]
+        
     conn = obtener_conexion()
     cursor = conn.cursor()
     cursor.execute("""
@@ -299,6 +321,9 @@ def obtener_rutas_top(fecha_str):
 
 def obtener_flota_top(fecha_str):
     """Retorna los 5 modelos de avión más comunes en las operaciones de una fecha."""
+    if USE_FIRESTORE:
+        return obtener_datos_dia_firestore(fecha_str)["flota"]
+        
     conn = obtener_conexion()
     cursor = conn.cursor()
     cursor.execute("""
@@ -326,6 +351,9 @@ def obtener_flota_top(fecha_str):
 
 def obtener_detalle_hora_pico(fecha_str, hora_local):
     """Retorna los aeropuertos más conectados durante la hora pico."""
+    if USE_FIRESTORE:
+        return obtener_datos_dia_firestore(fecha_str)["detalle_pico"]
+        
     conn = obtener_conexion()
     cursor = conn.cursor()
     cursor.execute("""
